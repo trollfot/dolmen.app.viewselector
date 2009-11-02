@@ -59,7 +59,7 @@ class ApplyView(grok.View):
 class SelectableViews(MenuViewlet):
     grok.order(80)
     grok.context(IViewSelector)
-    grok.viewletmanager(master.DolmenAboveBody)
+    grok.viewletmanager(master.AboveBody)
     grok.require("dolmen.content.Edit")
 
     menu_name = u"selectable-views"
