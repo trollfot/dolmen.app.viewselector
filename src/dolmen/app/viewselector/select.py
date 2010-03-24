@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
 
-import grok
-import megrok.menu
-
+import grokcore.viewlet as grok
+from megrok.layout import IPage
+from dolmen.app.layout import Page, MenuViewlet, master
 from zope.schema import TextLine
 from zope.interface import Interface
-from zope.component import getMultiAdapter, getUtility
-from zope.traversing.browser.absoluteurl import absoluteURL
-from zope.app.publisher.interfaces.browser import IBrowserMenu
-
-from megrok.z3cform.base import IGrokForm
-from dolmen.app.layout import Page, MenuViewlet, master
+from zope.component import getMultiAdapter
 
 
 class IViewSelector(Interface):
+    """A component aware of dynamic views.
+    """
     selected_view = TextLine(
-        title = u"View",
-        default = u"base_view",
-        required = True
+        title=u"View",
+        default=u"base_view",
+        required=True,
         )
 
 
@@ -28,17 +25,11 @@ class SelectedView(Page):
 
     def render(self):
         rendering = getMultiAdapter(
-            (self.context, self.request),
-            name = self.context.selected_view
-            )
-        rendering.update()
-        if IGrokForm.providedBy(rendering): rendering.updateForm()
-        return rendering.content()
-
-
-class SelectablePage(Page):
-    grok.baseclass()
-    megrok.menu.menuitem(u"selectable-views")
+            (self.context, self.request), name=self.context.selected_view)
+        if IPage.providedBy(rendering):
+            rendering.update()
+            return rendering.content()
+        return u"The selected view is not a valid IPage component."
 
 
 class ApplyView(grok.View):
@@ -67,7 +58,7 @@ class SelectableViews(MenuViewlet):
 
     def update(self):
         self.title, actions = self.get_actions(self.context)
-        
+
         if actions:
             url = self.view.url(self.context, name='viewselector')
             selected = self.context.selected_view

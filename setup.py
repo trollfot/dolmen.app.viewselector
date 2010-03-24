@@ -26,7 +26,17 @@ setup(name = name,
           'setuptools',
           'grokcore.view',
           'dolmen.app.layout',
+          'grokcore.viewlet',
+          'grokcore.component',
+          'megrok.menu',
+          'megrok.layout',
+          'zope.component',
+          'zope.interface',
+          'zope.schema',
       ],
+      extras_require = {'test': [
+          # test requirement here
+          ]},
       classifiers = [
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',

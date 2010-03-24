@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import megrok.menu
 import grokcore.component as grok
 from dolmen.app.layout import Page
