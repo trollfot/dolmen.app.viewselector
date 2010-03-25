@@ -5,7 +5,7 @@ import grokcore.component as grok
 from dolmen.app.layout import Page
 
 
-class AlternateView(Page):
+class AlternativeView(Page):
     """An alternative view for an object.
     """
     grok.baseclass()

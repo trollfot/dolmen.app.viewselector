@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import grokcore.viewlet as grok
+from grokcore import message
 from megrok.layout import IPage
 from dolmen.app.layout import Page, MenuViewlet, master
 from zope.schema import TextLine
 from zope.interface import Interface
-from zope.component import getMultiAdapter
+from zope.component import queryMultiAdapter
 
 
 class IViewSelector(Interface):
@@ -24,9 +25,9 @@ class SelectedView(Page):
     grok.require("dolmen.content.View")
 
     def render(self):
-        rendering = getMultiAdapter(
+        rendering = queryMultiAdapter(
             (self.context, self.request), name=self.context.selected_view)
-        if IPage.providedBy(rendering):
+        if rendering is not None and IPage.providedBy(rendering):
             rendering.update()
             return rendering.content()
         return u"The selected view is not a valid IPage component."
@@ -37,13 +38,14 @@ class ApplyView(grok.View):
     grok.context(IViewSelector)
     grok.require("dolmen.content.Edit")
 
-    def render(self):
-        name = self.request.form.get('name')
+    def render(self, name=None):
         if not name or name == 'index':
-            self.flash("This element can't be selected as the default view.")
+            message.send(
+                u"This element can't be selected as the default view.")
         else:
             self.context.selected_view = name
-            self.flash("%r has been selected as the default view." % name)
+            message.send(
+                u"%r has been selected as the default view." % name)
         return self.redirect(self.url(self.context))
 
 
