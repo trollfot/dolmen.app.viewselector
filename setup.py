@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from os.path import join
 
 name = 'dolmen.app.viewselector'
-version = '0.2'
+version = '0.2.1'
 readme = open(join('src', 'dolmen', 'app', 'viewselector', "README.txt")).read()
 history = open(join('docs', 'HISTORY.txt')).read().replace(name + ' - ', '')
 
@@ -21,7 +21,7 @@ setup(name = name,
       namespace_packages = ['dolmen', 'dolmen.app'],
       include_package_data = True,
       platforms = 'Any',
-      zip_safe = True,
+      zip_safe = False,
       install_requires=[
           'dolmen.app.layout',
           'grokcore.component',
