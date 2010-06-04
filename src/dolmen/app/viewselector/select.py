@@ -3,20 +3,10 @@
 import grokcore.viewlet as grok
 from grokcore import message
 from megrok.layout import IPage
-from dolmen.app.layout import Page, MenuViewlet, master
-from zope.schema import TextLine
-from zope.interface import Interface
+from dolmen.app.viewselector import MF as _, SelectableViewsMenu, IViewSelector
+from dolmen.app.layout import Page, master
+from dolmen.app.layout.viewlets import ContextualActions
 from zope.component import queryMultiAdapter
-
-
-class IViewSelector(Interface):
-    """A component aware of dynamic views.
-    """
-    selected_view = TextLine(
-        title=u"View",
-        default=u"base_view",
-        required=True,
-        )
 
 
 class SelectedView(Page):
@@ -30,7 +20,7 @@ class SelectedView(Page):
         if rendering is not None and IPage.providedBy(rendering):
             rendering.update()
             return rendering.content()
-        return u"The selected view is not a valid IPage component."
+        return _(u"The selected view is not a valid IPage component.")
 
 
 class ApplyView(grok.View):
@@ -41,33 +31,37 @@ class ApplyView(grok.View):
     def render(self, name=None):
         if not name or name == 'index':
             message.send(
-                u"This element can't be selected as the default view.")
+                _(u"This element can't be selected as the default view."))
         else:
             self.context.selected_view = name
             message.send(
-                u"%r has been selected as the default view." % name)
+                _(u"${name} has been selected as the default view.",
+                  mapping={'name': name}))
         return self.redirect(self.url(self.context))
 
 
-class SelectableViews(MenuViewlet):
+class SelectableViews(ContextualActions):
     grok.order(80)
     grok.context(IViewSelector)
     grok.viewletmanager(master.AboveBody)
     grok.require("dolmen.content.Edit")
 
-    menu_name = u"selectable-views"
-    menu_class = u"additional-actions"
+    menu_factory = SelectableViewsMenu
 
-    def update(self):
-        self.title, actions = self.get_actions(self.context)
+    def compute_actions(self, viewlets):
+        for action in viewlets:
+            selected = action.__name__ == self.context.selected_view
+            if not selected:
+                url = "%s/@@viewselector?name=%s" % (
+                    self.menu.context_url, action.__name__)
+            else:
+                url = None
 
-        if actions:
-            url = self.view.url(self.context, name='viewselector')
-            selected = self.context.selected_view
-            self.actions = [{'url': "%s?name=%s" % (url, action['action']),
-                             'title': action['title'],
-                             'selected': action['action'] == selected,
-                             'css': (action['action'] == selected
-                                     and self.entry_class + ' selected'
-                                     or self.entry_class)}
-                            for action in actions]
+            yield {
+                'id': action.__name__,
+                'url': url,
+                'title': action.title,
+                'selected': selected,
+                'class': (selected and 'selected ' +
+                          self.menu.entry_class or self.menu.entry_class),
+                }

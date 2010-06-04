@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import megrok.menu
+import grokcore.component as grok
+from dolmen import menu
+from dolmen.app.viewselector import MF as _, IViewSelector
 
 
-class SelectableViewsMenu(megrok.menu.Menu):
-    megrok.menu.name('selectable-views')
-    megrok.menu.title('Content display')
+class SelectableViewsMenu(menu.Menu):
+    grok.name('selectable-views')
+    grok.title(_(u'Content display'))
+    grok.context(IViewSelector)
+    menu_class = u"menu additional-actions"

@@ -55,6 +55,10 @@ aware of the views selection::
 
 We defined the default view to the view named "sleeping".
 
+  >>> from zope.component.hooks import getSite
+  >>> site = getSite()
+  >>> herman = site['herman'] = Bear()
+
 
 Defining alternate views
 ========================
@@ -66,9 +70,9 @@ base class::
 
   >>> import grokcore.view as grok
   >>> from grokcore.component import testing
-  >>> from dolmen.app.viewselector import AlternativeView
+  >>> from dolmen.app.layout import Page
 
-  >>> class Sleeping(AlternativeView):
+  >>> class Sleeping(Page):
   ...   grok.context(Bear)
   ...   grok.title("Sleeping bear")
   ...
@@ -82,7 +86,7 @@ The "sleeping" view that we defined as a default value for our IViewSelector
 is now defined and registered. Let's register 2 other views, to populate
 the menu and provide a "realistic" usecase::
 
-  >>> class PolarFur(AlternativeView):
+  >>> class PolarFur(Page):
   ...   grok.context(Bear)
   ...   grok.title("Polar bear")
   ...
@@ -92,7 +96,7 @@ the menu and provide a "realistic" usecase::
   >>> testing.grok_component('polar', PolarFur)
   True
 
-  >>> class SpringFur(AlternativeView):
+  >>> class SpringFur(Page):
   ...   grok.context(Bear)
   ...   grok.title("Spring bear")
   ...   grok.require("dolmen.content.Edit")
@@ -114,8 +118,6 @@ We first need to instance the two needed components, the content and
 the request ::
 
   >>> from zope.publisher.browser import TestRequest
-
-  >>> herman = Bear()
   >>> request = TestRequest()
 
 The content provides IViewSelector, the interface for which the "routing"
@@ -162,102 +164,9 @@ If the view doesn't exist, a base message is returned::
 Applying the view via the User interface
 ========================================
 
-The selected view can be chosen from a list of available alternative view.
-This choice is made via a menu, for which the views are registered.
-
-Menu
-----
-
-Let's render the menu, to have a look at its structure.
-Before we can get a functional menu, which requires a located content, we need
-to persist our content in a functional site::
-
-  >>> from zope.component.hooks import getSite
-  >>> site = getSite()
-
-  >>> herman = site['herman'] = herman
-  >>> herman.__name__
-  u'herman'
-
-The content located, we can instanciate the menu. The menu is handled by
-``megrok.menu`` and is a ``zope.browsermenu.IBrowserMenu`` component.
-
-A viewlet is registered in order to render this menu is a conventional way::
-
-  >>> baseview = Sleeping(herman, request)
-
-  >>> from dolmen.app.layout.master import AboveBody
-  >>> from dolmen.app.viewselector.select import SelectableViews
-
-  >>> manager = AboveBody(herman, request, baseview)
-  >>> menu = SelectableViews(herman, request, baseview, manager)
-
-The alternate views do use a security declaration and therefore, we need to
-login as a particular user, to test the rendering. Here, the `SpringFur`
-view requires the `dolmen.content.Edit` permission.
-
-Let's login as a used that doesn't have this permission granted::
-
-  >>> login('zope.user')
-
-When rendering the menu, the `SpringFur` component will, therefore,
-be omitted::
-
-  >>> menu.update()
-  >>> print menu.render()
-  <dl id="selectable-views" class="additional-actions">
-    <dt>Content display</dt>
-    <dd>
-      <ul class="menu">
-        <li class="entry">
-    	  <a href="http://127.0.0.1/herman/viewselector?name=sleeping"
-             title="Sleeping bear">Sleeping bear</a>
-     	</li>
-       	<li class="entry">
-    	  <a href="http://127.0.0.1/herman/viewselector?name=polarfur"
-             title="Polar bear">Polar bear</a>
-	</li>
-      </ul>
-    </dd>
-  </dl>
-
-  >>> logout()
-
-If we now log in with a user with the right permission granted, we see
-that the component is correctly included::
-
-  >>> login('zope.mgr')
-  >>> menu.update()
-  >>> print menu.render()
-  <dl id="selectable-views" class="additional-actions">
-    <dt>Content display</dt>
-    <dd>
-      <ul class="menu">
-        <li class="entry">
-    	  <a href="http://127.0.0.1/herman/viewselector?name=sleeping"
-             title="Sleeping bear">Sleeping bear</a>
-     	</li>
-       	<li class="entry">
-    	  <a href="http://127.0.0.1/herman/viewselector?name=polarfur"
-             title="Polar bear">Polar bear</a>
-	</li>
-    	<li class="entry">
-    	  <a href="http://127.0.0.1/herman/viewselector?name=springfur"
-             title="Spring bear">Spring bear</a>
-    	</li>
-      </ul>
-    </dd>
-  </dl>
-
-  >>> logout()
-
-
-Apply
------
-
-The menu above exposes the view 'viewselector', registered for a 
-IViewSelector content. This view is the component that effectively
-changes the `selected_view` attribute to the clicked value.
+The view 'viewselector', registered for an IViewSelector content is
+the component that effectively changes the `selected_view` attribute
+to the clicked value.
 
 Let's simulate a click to test that view. The current value of the 
 `selected_view` attribute is inconsistant::
