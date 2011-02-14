@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from os.path import join
 
 name = 'dolmen.app.viewselector'
-version = '1.0a1'
+version = '1.0b1'
 readme = open(join('src', 'dolmen', 'app', 'viewselector', "README.txt")).read()
 history = open(join('docs', 'HISTORY.txt')).read().replace(name + ' - ', '')
 
@@ -32,20 +32,19 @@ setup(name = name,
           'megrok.layout',
           'setuptools',
           'zope.component',
+          'zope.i18n',
           'zope.i18nmessageid',
           'zope.interface',
           'zope.schema',
       ],
       extras_require = {'test': [
           'zope.container',
-          'zope.i18n',
           'zope.location',
           'zope.principalregistry',
           'zope.publisher',
           'zope.security',
           'zope.securitypolicy',
           'zope.site',
-          'zope.testing',
           'zope.traversing',
           ]},
       classifiers = [
